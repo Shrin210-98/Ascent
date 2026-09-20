@@ -6,15 +6,18 @@ import {
 } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { InfoDialog } from "@/components/main/InfoDialog"
+import { SyncMenu } from "@/components/main/SyncMenu"
 import { CalendarIcon } from "lucide-react"
 import { format } from "date-fns"
-import type { LevelInfo } from "@/lib/types"
+import type { LevelInfo, AppData } from "@/lib/types"
 
 interface HeaderProps {
   selectedDate: Date
   onDateChange: (d: Date) => void
   level: LevelInfo
   lifetimeXP: number
+  data: AppData
+  onPull: (data: AppData) => void
 }
 
 export function Header({
@@ -22,6 +25,8 @@ export function Header({
   onDateChange,
   level,
   lifetimeXP,
+  data,
+  onPull,
 }: HeaderProps) {
   return (
     <header className="flex flex-col gap-3">
@@ -34,7 +39,11 @@ export function Header({
             the Dopamine Quest
           </p>
         </div>
-        <InfoDialog level={level} lifetimeXP={lifetimeXP} />
+
+        <div className="flex items-center gap-1">
+          <SyncMenu data={data} onPull={onPull} />
+          <InfoDialog level={level} lifetimeXP={lifetimeXP} />
+        </div>
       </div>
 
       <Popover>

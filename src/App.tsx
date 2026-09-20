@@ -6,7 +6,6 @@ import { CalendarView } from "@/components/main/CalendarView"
 import { WorkCard } from "@/components/main/WorkCard"
 import { ChoresCard } from "@/components/main/ChoresCard"
 import { ExerciseCard } from "@/components/main/ExerciseCard"
-import { SyncButton } from "@/components/main/SyncButton"
 import { useAppData } from "@/hooks/useAppData"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
@@ -36,9 +35,9 @@ function Inner() {
           onDateChange={setSelectedDate}
           level={level}
           lifetimeXP={lifetimeXP}
+          data={data}
+          onPull={replaceData}
         />
-
-        <SyncButton onPull={replaceData} />
 
         <Dashboard
           level={level}

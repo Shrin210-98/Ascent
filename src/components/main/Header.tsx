@@ -37,7 +37,7 @@ export function Header({
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Ascent
           </h1>
-          <InfoDialog level={level} lifetimeXP={lifetimeXP} />
+          <InfoDialog data={data} level={level} lifetimeXP={lifetimeXP} />
         </div>
 
         <div className="flex items-center gap-1">

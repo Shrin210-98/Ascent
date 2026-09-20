@@ -8,9 +8,10 @@ import type { DayData, Streaks } from "./types"
 // CHORE STREAK:    Day counts if completedChores.length >= 3
 // EXERCISE STREAK: Day counts if total sets > 0
 //
-// A streak counts consecutive days ending at `endDate` (usually today).
-// If today hasn't qualified yet, we look at yesterday onward — so the
-// streak doesn't reset just because you haven't worked YET today.
+// GRACE RULE:
+// - Today's miss is skipped (you haven't done the thing YET today)
+// - One additional missed day anywhere = grace, streak survives
+// - Two consecutive missed days = streak breaks
 //
 // ─────────────────────────────────────────────────────────
 
@@ -26,18 +27,15 @@ const qualifiesExercise: Qualifier = (day) => {
   return Object.values(day.sets).reduce((a, b) => a + b, 0) > 0
 }
 
-// Count consecutive qualifying days going backwards from `endDate`.
-// If the most recent day (today) does NOT qualify, we still count the
-// streak up to yesterday — so your streak isn't broken just because
-// you haven't done the thing yet today.
 const countStreak = (
   days: Record<string, DayData>,
   qualifies: Qualifier,
   endDate: Date = new Date()
 ): number => {
-  const keys = lastNDays(365, endDate) // look back up to 1 year
+  const keys = lastNDays(365, endDate)
 
   let streak = 0
+  let misses = 0
   let started = false
 
   for (const key of keys) {
@@ -46,12 +44,19 @@ const countStreak = (
 
     if (ok) {
       streak++
+      misses = 0
       started = true
     } else {
-      // If we haven't started counting yet (i.e. today isn't qualified),
-      // skip the first miss and keep looking. After that, a miss ends it.
-      if (!started) continue
-      break
+      misses++
+      if (!started) {
+        // Haven't started counting yet — this is today's miss. Skip.
+        continue
+      }
+      if (misses >= 2) {
+        // Two consecutive misses — streak ends here.
+        break
+      }
+      // One miss = grace. Keep going.
     }
   }
 

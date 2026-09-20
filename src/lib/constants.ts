@@ -32,3 +32,5 @@ export const EMPTY_DAY: DayData = {
   completedChores: [],
   sets: { push: 0, pull: 0, legs: 0, weights: 0 },
 }
+
+export const QUEST_START_DATE = new Date("2026-09-20")

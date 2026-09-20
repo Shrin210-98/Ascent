@@ -16,6 +16,7 @@ import { useLevelUp } from "@/hooks/useLevelUp"
 import { useStreakMilestones } from "@/hooks/useStreakMilestones"
 import { MiniWeeklyDots } from "./components/main/MiniWeeklyDots"
 import { BackdatedBadge } from "./components/main/BackdatedBadge"
+import { useWorkMilestone } from "./hooks/useWorkMilestones"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
@@ -39,6 +40,7 @@ function Inner() {
 
   const levelUp = useLevelUp(level.number, level.title)
   const { milestone, clear } = useStreakMilestones(streaks)
+  const { trigger: workMilestoneTrigger } = useWorkMilestone(day.workHours)
 
   // ─── HANDLE BROWSER BACK BUTTON ────────────────────
   useEffect(() => {
@@ -141,6 +143,7 @@ function Inner() {
   return (
     <>
       <Confetti trigger={levelUp.trigger} />
+      <Confetti trigger={workMilestoneTrigger} />
       <LevelUpToast level={levelUp.newLevel} title={levelUp.newTitle} />
       <StreakToast milestone={milestone} onDismiss={clear} />
 

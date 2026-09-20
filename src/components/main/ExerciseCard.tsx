@@ -1,13 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { SectionWarning } from "@/components/main/SectionWarning"
+import { ExerciseLogDialog } from "@/components/main/ExerciseLogDialog"
 import { calcExerciseXP } from "@/lib/xp"
 import { exerciseWarning } from "@/lib/warnings"
-import type { ExerciseSets, DayData } from "@/lib/types"
+import type { ExerciseSets, DayData, AppData } from "@/lib/types"
 
 interface ExerciseCardProps {
   sets: ExerciseSets
   onChange: (type: keyof ExerciseSets, value: number) => void
+  data: AppData
 }
 
 const TYPES: (keyof ExerciseSets)[] = ["push", "pull", "legs", "weights"]
@@ -19,14 +21,15 @@ const EMPTY_DAY: DayData = {
   sets: { push: 0, pull: 0, legs: 0, weights: 0 },
 }
 
-export function ExerciseCard({ sets, onChange }: ExerciseCardProps) {
+export function ExerciseCard({ sets, onChange, data }: ExerciseCardProps) {
   const { base, bonus, total, totalSets } = calcExerciseXP(sets)
   const warning = exerciseWarning({ ...EMPTY_DAY, sets })
 
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-base">💪 Exercise</CardTitle>
+        <ExerciseLogDialog data={data} />
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {warning && (

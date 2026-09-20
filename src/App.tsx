@@ -14,9 +14,10 @@ import { StatsTransition } from "@/components/stats/StatsTransition"
 import { useAppData } from "@/hooks/useAppData"
 import { useLevelUp } from "@/hooks/useLevelUp"
 import { useStreakMilestones } from "@/hooks/useStreakMilestones"
-import { MiniWeeklyDots } from "./components/main/MiniWeeklyDots"
-import { BackdatedBadge } from "./components/main/BackdatedBadge"
-import { useWorkMilestone } from "./hooks/useWorkMilestones"
+import { MiniWeeklyDots } from "@/components/main/MiniWeeklyDots"
+import { BackdatedBadge } from "@/components/main/BackdatedBadge"
+import { useWorkMilestone } from "@/hooks/useWorkMilestones"
+import { Footer } from "@/components/main/Footer"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
@@ -100,7 +101,7 @@ function Inner() {
         <BackdatedBadge selectedDate={selectedDate} />
 
         <SavePulse value={JSON.stringify(day.sets)}>
-          <ExerciseCard sets={day.sets} onChange={setExercise} />
+          <ExerciseCard data={data} sets={day.sets} onChange={setExercise} />
         </SavePulse>
 
         <SavePulse value={`${day.workHours}|${day.workNotes}`}>
@@ -109,6 +110,7 @@ function Inner() {
             workNotes={day.workNotes}
             onHoursChange={setWorkHours}
             onNotesChange={setWorkNotes}
+            data={data}
           />
         </SavePulse>
 
@@ -116,13 +118,15 @@ function Inner() {
           <ChoresCard
             completedChores={day.completedChores}
             onToggle={toggleChore}
+            data={data}
           />
         </SavePulse>
 
-        <footer className="pb-4 text-center text-xs text-muted-foreground">
+        <Footer day={day} streaks={streaks} />
+        {/* <footer className="pb-4 text-center text-xs text-muted-foreground">
           Press <kbd className="rounded border px-1.5 py-0.5 font-mono">d</kbd>{" "}
           to toggle dark mode
-        </footer>
+        </footer> */}
       </div>
     </div>
   )

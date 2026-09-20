@@ -7,14 +7,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, Dumbbell } from "lucide-react"
+import { Copy, Check, Info, ChevronLeft, ChevronRight } from "lucide-react"
 import { dateKey } from "@/lib/date"
 import {
   format,
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  parseISO,
   addMonths,
   subMonths,
 } from "date-fns"
@@ -32,7 +31,6 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
   const monthEnd = endOfMonth(viewMonth)
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
-  // Build rows for the whole month
   const rows = days.map((date) => {
     const key = dateKey(date)
     const day = data.days[key]
@@ -46,12 +44,8 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
     }
   })
 
-  // Filter: only days with data OR all days? Let's show all — timeline feel.
-  // If you prefer only days with activity, change this to `rows.filter(r => r.total > 0)`
   const displayRows = rows
 
-  // Build the copyable string:
-  // "01-09 = 0/3/0/0\n02-09 = 2/0/0/0\n..."
   const copyText = displayRows
     .map(
       (r) =>
@@ -69,12 +63,10 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
     }
   }
 
-  // Split rows into two columns
   const half = Math.ceil(displayRows.length / 2)
   const leftCol = displayRows.slice(0, half)
   const rightCol = displayRows.slice(half)
 
-  // Monthly totals
   const totals = displayRows.reduce(
     (acc, r) => ({
       push: acc.push + r.sets.push,
@@ -89,58 +81,54 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="w-full justify-start">
-          <Dumbbell className="mr-2 h-4 w-4 text-cyan-600" />
-          View exercise log
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Exercise log"
+          className="h-7 w-7"
+        >
+          <Info className="h-4 w-4" />
         </Button>
       </DialogTrigger>
 
       <DialogContent className="max-h-[95vh] max-w-2xl overflow-y-auto p-0 sm:max-h-[90vh]">
-        <DialogHeader className="sticky top-0 z-10 flex flex-row items-center justify-between border-b bg-background/95 px-4 py-3 backdrop-blur sm:px-6">
+        {/* ─── HEADER: Title + Close (auto) ──────── */}
+        <DialogHeader className="border-b px-4 py-3 sm:px-6">
           <DialogTitle>Exercise Log</DialogTitle>
-          <Button
-            size="sm"
-            variant="outline"
-            className="mr-6 h-8 gap-1.5"
-            onClick={handleCopy}
-          >
-            {copied ? (
-              <>
-                <Check className="h-3.5 w-3.5 text-cyan-600" />
-                Copied
-              </>
-            ) : (
-              <>
-                <Copy className="h-3.5 w-3.5" />
-                Copy
-              </>
-            )}
-          </Button>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 p-4 sm:p-6">
-          {/* ─── MONTH NAV ─────────────────────────── */}
-          <div className="flex items-center justify-between">
+        {/* ─── CONTENT ──────────────────────────── */}
+        <div className="flex flex-col gap-4 p-4 sm:p-6 pt-0 sm:pt-0">
+          {/* Month nav + Copy row */}
+          <div className="flex items-center justify-between gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
+              className="h-8 w-8"
               onClick={() => setViewMonth(subMonths(viewMonth, 1))}
+              aria-label="Previous month"
             >
-              ← Prev
+              <ChevronLeft className="h-4 w-4" />
             </Button>
+
             <span className="text-sm font-medium">
               {format(viewMonth, "MMMM yyyy")}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setViewMonth(addMonths(viewMonth, 1))}
-            >
-              Next →
-            </Button>
+
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMonth(addMonths(viewMonth, 1))}
+                aria-label="Next month"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          {/* ─── 2-COLUMN GRID ─────────────────────── */}
+          {/* 2-column grid */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-1 font-mono text-xs tabular-nums">
             <div className="flex flex-col gap-1">
               {leftCol.map((r) => (
@@ -176,7 +164,7 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
             </div>
           </div>
 
-          {/* ─── TOTALS ────────────────────────────── */}
+          {/* Totals */}
           <div className="flex items-center justify-between border-t pt-3 text-xs">
             <span className="font-medium">Month total</span>
             <span className="font-mono font-semibold text-cyan-600 tabular-nums dark:text-cyan-400">
@@ -184,6 +172,25 @@ export function ExerciseLogDialog({ data }: ExerciseLogDialogProps) {
               {totals.total}
             </span>
           </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 gap-1.5"
+            onClick={handleCopy}
+          >
+            {copied ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-cyan-600" />
+                Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5" />
+                Copy
+              </>
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

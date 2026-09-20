@@ -2,15 +2,17 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { SectionWarning } from "@/components/main/SectionWarning"
+import { WorkLogDialog } from "@/components/main/WorkLogDialog"
 import { calcWorkXP } from "@/lib/xp"
 import { workWarning } from "@/lib/warnings"
-import type { DayData } from "@/lib/types"
+import type { DayData, AppData } from "@/lib/types"
 
 interface WorkCardProps {
   workHours: number
   workNotes: string
   onHoursChange: (h: number) => void
   onNotesChange: (n: string) => void
+  data: AppData
 }
 
 const EMPTY_DAY: DayData = {
@@ -28,6 +30,7 @@ export function WorkCard({
   workNotes,
   onHoursChange,
   onNotesChange,
+  data,
 }: WorkCardProps) {
   const { base, bonus, total } = calcWorkXP(workHours)
   const warning = workWarning({ ...EMPTY_DAY, workHours, workNotes })
@@ -54,8 +57,9 @@ export function WorkCard({
 
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-base">📋 Work</CardTitle>
+        <WorkLogDialog data={data} />
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {warning && (

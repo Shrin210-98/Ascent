@@ -4,7 +4,6 @@ import { CalendarView } from "@/components/main/CalendarView"
 import { XPGrowthChart } from "./XPGrowthChart"
 import { StatsSummary } from "./StatsSummary"
 import { WeeklyDots } from "./WeeklyDots"
-import { ExerciseLogDialog } from "./ExerciseLogDialog"
 import type { AppData, DayData, LevelInfo, Streaks } from "@/lib/types"
 
 interface StatsPageProps {
@@ -53,9 +52,6 @@ export function StatsPage({
         <XPGrowthChart data={data} />
 
         <WeeklyDots data={data} />
-
-        {/* Exercise log — opens as a dialog */}
-        <ExerciseLogDialog data={data} />
       </div>
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { GoogleOAuthProvider } from "@react-oauth/google"
 import { Header } from "@/components/main/Header"
 import { Dashboard } from "@/components/main/Dashboard"
@@ -39,6 +39,38 @@ function Inner() {
 
   const levelUp = useLevelUp(level.number, level.title)
   const { milestone, clear } = useStreakMilestones(streaks)
+
+  // ─── HANDLE BROWSER BACK BUTTON ────────────────────
+  useEffect(() => {
+    // When Stats opens, push a state so back closes it
+    if (showStats) {
+      window.history.pushState({ stats: true }, "")
+
+      const handlePopState = () => {
+        setShowStats(false)
+      }
+
+      window.addEventListener("popstate", handlePopState)
+      return () => {
+        window.removeEventListener("popstate", handlePopState)
+      }
+    }
+  }, [showStats])
+
+  // ─── HANDLE OPEN STATS (from button) ───────────────
+  const openStats = () => {
+    setShowStats(true)
+  }
+
+  // ─── HANDLE CLOSE STATS (from back arrow) ──────────
+  const closeStats = () => {
+    // If we pushed a history entry, go back
+    if (window.history.state?.stats) {
+      window.history.back()
+    } else {
+      setShowStats(false)
+    }
+  }
 
   // ─── MAIN PAGE ─────────────────────────────────────
   const mainPage = (

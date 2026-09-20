@@ -7,7 +7,7 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { InfoDialog } from "@/components/main/InfoDialog"
 import { SyncMenu } from "@/components/main/SyncMenu"
-import { CalendarIcon } from "lucide-react"
+import { CalendarIcon, BarChart3 } from "lucide-react"
 import { format } from "date-fns"
 import type { LevelInfo, AppData } from "@/lib/types"
 
@@ -18,6 +18,7 @@ interface HeaderProps {
   lifetimeXP: number
   data: AppData
   onPull: (data: AppData) => void
+  onOpenStats: () => void
 }
 
 export function Header({
@@ -27,24 +28,34 @@ export function Header({
   lifetimeXP,
   data,
   onPull,
+  onOpenStats,
 }: HeaderProps) {
   return (
     <header className="flex flex-col gap-3">
       <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1.5">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             Ascent
           </h1>
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            the Dopamine Quest
-          </p>
+          <InfoDialog level={level} lifetimeXP={lifetimeXP} />
         </div>
 
         <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onOpenStats}
+            aria-label="Stats"
+          >
+            <BarChart3 className="h-4 w-4" />
+          </Button>
           <SyncMenu data={data} onPull={onPull} />
-          <InfoDialog level={level} lifetimeXP={lifetimeXP} />
         </div>
       </div>
+
+      <p className="text-xs text-muted-foreground sm:text-sm">
+        the Dopamine Quest
+      </p>
 
       <Popover>
         <PopoverTrigger asChild>

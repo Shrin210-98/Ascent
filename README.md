@@ -134,7 +134,7 @@ npm run dev
 
 # Build for production
 npm run build
-
+```
 
 ## 🐛 Known Limitations
 
@@ -144,7 +144,6 @@ npm run build
 - **No offline sync queue** — If offline, changes save locally but don't retry until the next edit.
 - **Pull overwrites local** — Pulling from Sheets replaces local data. Push first if you have unsynced changes.
 
----
 
 ## 🙏 Acknowledgements
 

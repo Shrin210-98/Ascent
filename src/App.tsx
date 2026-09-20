@@ -14,6 +14,8 @@ import { StatsTransition } from "@/components/stats/StatsTransition"
 import { useAppData } from "@/hooks/useAppData"
 import { useLevelUp } from "@/hooks/useLevelUp"
 import { useStreakMilestones } from "@/hooks/useStreakMilestones"
+import { MiniWeeklyDots } from "./components/main/MiniWeeklyDots"
+import { BackdatedBadge } from "./components/main/BackdatedBadge"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
@@ -61,6 +63,8 @@ function Inner() {
           day={day}
         />
 
+        <MiniWeeklyDots data={data} />
+        <BackdatedBadge selectedDate={selectedDate} />
         <SavePulse value={JSON.stringify(day.sets)}>
           <ExerciseCard sets={day.sets} onChange={setExercise} />
         </SavePulse>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#0a0a0a"/>
+
+  <!-- Rising path: short dip, then long descent -->
+  <path
+    d="M10 48 L24 30 L30 40 L50 18 L64 34"
+    stroke="#b8b8b8"
+    stroke-width="3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <!-- Floating dot above the taller peak -->
+  <circle cx="50" cy="12" r="2.5" fill="#b8b8b8"/>
+</svg>

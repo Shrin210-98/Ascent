@@ -42,6 +42,7 @@
     "globals": "^17",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "sharp-cli": "^6.1.0",
     "typescript": "~6",
     "typescript-eslint": "^8",
     "vite": "^8"

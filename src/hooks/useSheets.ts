@@ -7,7 +7,7 @@ const TOKEN_KEY = "ascent_google_token"
 
 export function useSheets() {
   const [accessToken, setAccessToken] = useState<string | null>(() =>
-    sessionStorage.getItem(TOKEN_KEY)
+    localStorage.getItem(TOKEN_KEY)
   )
   const [syncing, setSyncing] = useState(false)
   const [lastSync, setLastSync] = useState<Date | null>(null)
@@ -18,7 +18,7 @@ export function useSheets() {
     onSuccess: (tokenResponse) => {
       const token = tokenResponse.access_token
       setAccessToken(token)
-      sessionStorage.setItem(TOKEN_KEY, token)
+      localStorage.setItem(TOKEN_KEY, token)
       setError(null)
     },
     onError: () => setError("Login failed"),
@@ -28,7 +28,7 @@ export function useSheets() {
   // ─── LOGOUT ────────────────────────────────────────────
   const logout = useCallback(() => {
     setAccessToken(null)
-    sessionStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(TOKEN_KEY)
   }, [])
 
   // ─── PULL (sheets → local) ─────────────────────────────

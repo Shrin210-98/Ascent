@@ -44,7 +44,6 @@ function Inner() {
 
   // ─── HANDLE BROWSER BACK BUTTON ────────────────────
   useEffect(() => {
-    // When Stats opens, push a state so back closes it
     if (showStats) {
       window.history.pushState({ stats: true }, "")
 
@@ -59,15 +58,15 @@ function Inner() {
     }
   }, [showStats])
 
-  // ─── HANDLE OPEN STATS (from button) ───────────────
+  // ─── OPEN STATS ────────────────────────────────────
   const openStats = () => {
     setShowStats(true)
   }
 
-  // ─── HANDLE CLOSE STATS (from back arrow) ──────────
+  // ─── CLOSE STATS ───────────────────────────────────
   const closeStats = () => {
-    // If we pushed a history entry, go back
     if (window.history.state?.stats) {
+      // Pops the history entry → triggers popstate → setShowStats(false)
       window.history.back()
     } else {
       setShowStats(false)
@@ -85,7 +84,7 @@ function Inner() {
           lifetimeXP={lifetimeXP}
           data={data}
           onPull={replaceData}
-          onOpenStats={() => setShowStats(true)}
+          onOpenStats={openStats}
         />
 
         <Dashboard
@@ -99,6 +98,7 @@ function Inner() {
 
         <MiniWeeklyDots data={data} />
         <BackdatedBadge selectedDate={selectedDate} />
+
         <SavePulse value={JSON.stringify(day.sets)}>
           <ExerciseCard sets={day.sets} onChange={setExercise} />
         </SavePulse>
@@ -136,7 +136,7 @@ function Inner() {
       onDateChange={setSelectedDate}
       level={level}
       streaks={streaks}
-      onClose={() => setShowStats(false)}
+      onClose={closeStats}
     />
   )
 

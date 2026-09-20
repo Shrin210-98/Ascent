@@ -43,7 +43,7 @@ export function Dashboard({
 
         {/* ─── PROGRESS BAR ──────────────────────────── */}
         <div className="flex flex-col gap-1">
-          <Progress value={level.progress} className="h-2" />
+          <Progress value={level.progress} className="h-2 [&>div]:bg-cyan-500" />
           <p className="text-right text-xs text-muted-foreground tabular-nums">
             {lifetimeXP} / {level.max === Infinity ? "∞" : level.max}
           </p>

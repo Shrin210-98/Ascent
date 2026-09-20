@@ -18,7 +18,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Cloud, CloudOff, RefreshCw, LogOut, Download, Upload } from "lucide-react"
+import {
+  Cloud,
+  CloudOff,
+  RefreshCw,
+  LogOut,
+  Download,
+  Upload,
+  AlertTriangle,
+} from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { useSheets } from "@/hooks/useSheets"
 import type { AppData } from "@/lib/types"
@@ -33,6 +41,7 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
     isLoggedIn,
     syncing,
     lastSync,
+    needsReconnect,
     login,
     logout,
     pullFromSheets,
@@ -41,7 +50,28 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
 
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  // ─── LOGGED OUT: single "Connect" button ──────────────
+  // ─── RECONNECT STATE ─────────────────────────────────
+  // If token expired, show a warning button instead of the menu
+  if (needsReconnect) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => login()}
+        aria-label="Reconnect Google Sheets"
+        className="relative"
+        title="Google session expired — tap to reconnect"
+      >
+        <Cloud className="h-4 w-4 text-amber-500" />
+        <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+        </span>
+      </Button>
+    )
+  }
+
+  // ─── NOT LOGGED IN ───────────────────────────────────
   if (!isLoggedIn) {
     return (
       <Button
@@ -55,7 +85,7 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
     )
   }
 
-  // ─── LOGGED IN: cloud icon → dropdown menu ────────────
+  // ─── LOGGED IN, WORKING ──────────────────────────────
   return (
     <>
       <DropdownMenu>
@@ -81,8 +111,8 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
               {syncing
                 ? "Syncing…"
                 : lastSync
-                ? `Synced ${formatDistanceToNow(lastSync, { addSuffix: true })}`
-                : "Connected"}
+                  ? `Synced ${formatDistanceToNow(lastSync, { addSuffix: true })}`
+                  : "Connected"}
             </span>
           </DropdownMenuLabel>
 
@@ -119,7 +149,6 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* ─── SIGN OUT CONFIRMATION DIALOG ───────────── */}
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -1,8 +1,16 @@
-import { dateKey } from "./date"
 import type { AppData, DayData } from "./types"
 
 const SHEET_ID = import.meta.env.VITE_SHEET_ID as string
 const BASE = "https://sheets.googleapis.com/v4/spreadsheets"
+
+// ─── ERROR TYPE ──────────────────────────────────────────
+
+export class SheetsAuthError extends Error {
+  constructor() {
+    super("Google auth expired")
+    this.name = "SheetsAuthError"
+  }
+}
 
 // ─── HELPERS ─────────────────────────────────────────────
 
@@ -11,7 +19,16 @@ const headers = (token: string) => ({
   "Content-Type": "application/json",
 })
 
-// Convert DayData to a row for the DailyLog sheet
+const checkResponse = async (res: Response) => {
+  if (res.status === 401 || res.status === 403) {
+    throw new SheetsAuthError()
+  }
+  if (!res.ok) {
+    throw new Error(`Sheets error: ${res.status}`)
+  }
+  return res
+}
+
 const dayToRow = (key: string, day: DayData): (string | number)[] => [
   key,
   day.workHours,
@@ -23,7 +40,6 @@ const dayToRow = (key: string, day: DayData): (string | number)[] => [
   day.sets.weights,
 ]
 
-// Convert a row from DailyLog back to DayData
 const rowToDay = (row: string[]): { key: string; day: DayData } | null => {
   if (!row[0]) return null
   return {
@@ -47,16 +63,13 @@ const rowToDay = (row: string[]): { key: string; day: DayData } | null => {
   }
 }
 
-// ─── READ ALL DATA ───────────────────────────────────────
+// ─── READ ────────────────────────────────────────────────
 
 export const fetchAllData = async (token: string): Promise<AppData> => {
   const res = await fetch(`${BASE}/${SHEET_ID}/values/DailyLog!A2:H`, {
     headers: headers(token),
   })
-
-  if (!res.ok) {
-    throw new Error(`Sheets read failed: ${res.status}`)
-  }
+  await checkResponse(res)
 
   const json = (await res.json()) as { values?: string[][] }
   const rows = json.values ?? []
@@ -66,25 +79,21 @@ export const fetchAllData = async (token: string): Promise<AppData> => {
     const parsed = rowToDay(row)
     if (parsed) days[parsed.key] = parsed.day
   }
-
   return { days }
 }
 
-// ─── WRITE ONE DAY (upsert) ──────────────────────────────
-
-// We use values.update with a range targeting the exact row for this date.
-// First we need to know which row that is. We'll fetch the date column,
-// find the index, then update that row.
+// ─── UPSERT ──────────────────────────────────────────────
 
 export const upsertDay = async (
   token: string,
   key: string,
   day: DayData
 ): Promise<void> => {
-  // 1. Find the row for this date
   const rangeRes = await fetch(`${BASE}/${SHEET_ID}/values/DailyLog!A:A`, {
     headers: headers(token),
   })
+  await checkResponse(rangeRes)
+
   const rangeJson = (await rangeRes.json()) as { values?: string[][] }
   const dateCol = rangeJson.values ?? []
   const rowIndex = dateCol.findIndex((r) => r[0] === key)
@@ -92,8 +101,7 @@ export const upsertDay = async (
   const row = dayToRow(key, day)
 
   if (rowIndex === -1) {
-    // Not found → append a new row
-    await fetch(
+    const appendRes = await fetch(
       `${BASE}/${SHEET_ID}/values/DailyLog!A:H:append?valueInputOption=USER_ENTERED`,
       {
         method: "POST",
@@ -101,10 +109,10 @@ export const upsertDay = async (
         body: JSON.stringify({ values: [row] }),
       }
     )
+    await checkResponse(appendRes)
   } else {
-    // Found → overwrite that row
-    const sheetRow = rowIndex + 1 // A1 notation is 1-indexed
-    await fetch(
+    const sheetRow = rowIndex + 1
+    const updateRes = await fetch(
       `${BASE}/${SHEET_ID}/values/DailyLog!A${sheetRow}:H${sheetRow}?valueInputOption=USER_ENTERED`,
       {
         method: "PUT",
@@ -112,27 +120,29 @@ export const upsertDay = async (
         body: JSON.stringify({ values: [row] }),
       }
     )
+    await checkResponse(updateRes)
   }
 }
 
-// ─── BULK UPLOAD (push everything local → sheets) ────────
+// ─── BULK PUSH ───────────────────────────────────────────
 
 export const pushAllData = async (
   token: string,
   data: AppData
 ): Promise<void> => {
   const rows = Object.entries(data.days).map(([key, day]) => dayToRow(key, day))
-
   if (rows.length === 0) return
 
-  // Clear existing data first
-  await fetch(`${BASE}/${SHEET_ID}/values/DailyLog!A2:H:clear`, {
-    method: "POST",
-    headers: headers(token),
-  })
+  const clearRes = await fetch(
+    `${BASE}/${SHEET_ID}/values/DailyLog!A2:H:clear`,
+    {
+      method: "POST",
+      headers: headers(token),
+    }
+  )
+  await checkResponse(clearRes)
 
-  // Write all rows
-  await fetch(
+  const writeRes = await fetch(
     `${BASE}/${SHEET_ID}/values/DailyLog!A2:H?valueInputOption=USER_ENTERED`,
     {
       method: "PUT",
@@ -140,4 +150,5 @@ export const pushAllData = async (
       body: JSON.stringify({ values: rows }),
     }
   )
+  await checkResponse(writeRes)
 }

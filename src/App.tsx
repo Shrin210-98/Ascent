@@ -6,7 +6,13 @@ import { CalendarView } from "@/components/main/CalendarView"
 import { WorkCard } from "@/components/main/WorkCard"
 import { ChoresCard } from "@/components/main/ChoresCard"
 import { ExerciseCard } from "@/components/main/ExerciseCard"
+import { Confetti } from "@/components/main/Confetti"
+import { LevelUpToast } from "@/components/main/LevelUpToast"
+import { StreakToast } from "@/components/main/StreakToast"
+import { SavePulse } from "@/components/main/SavePulse"
 import { useAppData } from "@/hooks/useAppData"
+import { useLevelUp } from "@/hooks/useLevelUp"
+import { useStreakMilestones } from "@/hooks/useStreakMilestones"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
@@ -27,8 +33,19 @@ function Inner() {
     replaceData,
   } = useAppData(selectedDate)
 
+  const levelUp = useLevelUp(level.number, level.title)
+  const { milestone, clear } = useStreakMilestones(streaks)
+
+  // A signature that changes whenever the day's data changes
+  const daySignature = JSON.stringify(day)
+
   return (
     <div className="min-h-svh bg-background">
+      {/* 🎉 Global celebrations */}
+      <Confetti trigger={levelUp.trigger} />
+      <LevelUpToast level={levelUp.newLevel} title={levelUp.newTitle} />
+      <StreakToast milestone={milestone} onDismiss={clear} />
+
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 sm:p-6">
         <Header
           selectedDate={selectedDate}
@@ -54,19 +71,26 @@ function Inner() {
           onDateChange={setSelectedDate}
         />
 
-        <ExerciseCard sets={day.sets} onChange={setExercise} />
+        {/* 🟢 Each card pulses green when its data changes */}
+        <SavePulse value={JSON.stringify(day.sets)}>
+          <ExerciseCard sets={day.sets} onChange={setExercise} />
+        </SavePulse>
 
-        <WorkCard
-          workHours={day.workHours}
-          workNotes={day.workNotes}
-          onHoursChange={setWorkHours}
-          onNotesChange={setWorkNotes}
-        />
+        <SavePulse value={`${day.workHours}|${day.workNotes}`}>
+          <WorkCard
+            workHours={day.workHours}
+            workNotes={day.workNotes}
+            onHoursChange={setWorkHours}
+            onNotesChange={setWorkNotes}
+          />
+        </SavePulse>
 
-        <ChoresCard
-          completedChores={day.completedChores}
-          onToggle={toggleChore}
-        />
+        <SavePulse value={JSON.stringify(day.completedChores)}>
+          <ChoresCard
+            completedChores={day.completedChores}
+            onToggle={toggleChore}
+          />
+        </SavePulse>
 
         <footer className="pb-4 text-center text-xs text-muted-foreground">
           Press <kbd className="rounded border px-1.5 py-0.5 font-mono">d</kbd>{" "}

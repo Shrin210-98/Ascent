@@ -14,10 +14,10 @@ import { StatsTransition } from "@/components/stats/StatsTransition"
 import { useAppData } from "@/hooks/useAppData"
 import { useLevelUp } from "@/hooks/useLevelUp"
 import { useStreakMilestones } from "@/hooks/useStreakMilestones"
-import { MiniWeeklyDots } from "@/components/main/MiniWeeklyDots"
-import { BackdatedBadge } from "@/components/main/BackdatedBadge"
 import { useWorkMilestone } from "@/hooks/useWorkMilestones"
-import { Footer } from "@/components/main/Footer"
+import { MiniWeeklyDots } from "./components/main/MiniWeeklyDots"
+import { BackdatedBadge } from "./components/main/BackdatedBadge"
+import { Footer } from "./components/main/Footer"
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string
 
@@ -43,38 +43,25 @@ function Inner() {
   const { milestone, clear } = useStreakMilestones(streaks)
   const { trigger: workMilestoneTrigger } = useWorkMilestone(day.workHours)
 
-  // ─── HANDLE BROWSER BACK BUTTON ────────────────────
+  // ─── BROWSER BACK ────────────────────────────────────
   useEffect(() => {
     if (showStats) {
       window.history.pushState({ stats: true }, "")
-
-      const handlePopState = () => {
-        setShowStats(false)
-      }
-
-      window.addEventListener("popstate", handlePopState)
-      return () => {
-        window.removeEventListener("popstate", handlePopState)
-      }
+      const onPop = () => setShowStats(false)
+      window.addEventListener("popstate", onPop)
+      return () => window.removeEventListener("popstate", onPop)
     }
   }, [showStats])
 
-  // ─── OPEN STATS ────────────────────────────────────
-  const openStats = () => {
-    setShowStats(true)
-  }
-
-  // ─── CLOSE STATS ───────────────────────────────────
+  const openStats = () => setShowStats(true)
   const closeStats = () => {
     if (window.history.state?.stats) {
-      // Pops the history entry → triggers popstate → setShowStats(false)
       window.history.back()
     } else {
       setShowStats(false)
     }
   }
 
-  // ─── MAIN PAGE ─────────────────────────────────────
   const mainPage = (
     <div className="min-h-svh bg-background">
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 p-4 sm:p-6">
@@ -84,7 +71,7 @@ function Inner() {
           level={level}
           lifetimeXP={lifetimeXP}
           data={data}
-          onPull={replaceData}
+          onReplace={replaceData}
           onOpenStats={openStats}
         />
 
@@ -101,7 +88,7 @@ function Inner() {
         <BackdatedBadge selectedDate={selectedDate} />
 
         <SavePulse value={JSON.stringify(day.sets)}>
-          <ExerciseCard data={data} sets={day.sets} onChange={setExercise} />
+          <ExerciseCard sets={day.sets} onChange={setExercise} data={data} />
         </SavePulse>
 
         <SavePulse value={`${day.workHours}|${day.workNotes}`}>
@@ -123,15 +110,10 @@ function Inner() {
         </SavePulse>
 
         <Footer day={day} streaks={streaks} />
-        {/* <footer className="pb-4 text-center text-xs text-muted-foreground">
-          Press <kbd className="rounded border px-1.5 py-0.5 font-mono">d</kbd>{" "}
-          to toggle dark mode
-        </footer> */}
       </div>
     </div>
   )
 
-  // ─── STATS PAGE ────────────────────────────────────
   const statsPage = (
     <StatsPage
       data={data}

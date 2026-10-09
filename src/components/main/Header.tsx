@@ -29,7 +29,7 @@ interface HeaderProps {
   level: LevelInfo
   lifetimeXP: number
   data: AppData
-  onPull: (data: AppData) => void
+  onReplace: (fresh: AppData) => void
   onOpenStats: () => void
 }
 
@@ -39,7 +39,7 @@ export function Header({
   level,
   lifetimeXP,
   data,
-  onPull,
+  onReplace,
   onOpenStats,
 }: HeaderProps) {
   const canGoForward = !isToday(selectedDate)
@@ -64,7 +64,7 @@ export function Header({
             >
               <BarChart3 className="h-4 w-4" />
             </Button>
-            <SyncMenu data={data} onPull={onPull} />
+            <SyncMenu data={data} onReplace={onReplace} />
           </div>
         </div>
 
@@ -73,7 +73,6 @@ export function Header({
         </p>
       </div>
 
-      {/* ─── DATE NAVIGATOR ───────────────────────── */}
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -89,13 +88,13 @@ export function Header({
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="h-9 flex-1 justify-center text-center font-normal"
+              className="h-9 flex-1 justify-start text-left font-normal"
             >
               <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
               <span className="truncate">{format(selectedDate, "PPP")}</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="center">
+          <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
               selected={selectedDate}

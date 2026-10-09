@@ -23,20 +23,21 @@ import {
   CloudOff,
   RefreshCw,
   LogOut,
-  Download,
-  Upload,
-  AlertTriangle,
+  HardDrive,
+  ArrowLeftRight,
 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { useSheets } from "@/hooks/useSheets"
+import { BackupDialog } from "@/components/main/BackupDialog"
+import { SyncDialog } from "@/components/main/SyncDialog"
 import type { AppData } from "@/lib/types"
 
 interface SyncMenuProps {
   data: AppData
-  onPull: (data: AppData) => void
+  onReplace: (fresh: AppData) => void
 }
 
-export function SyncMenu({ data, onPull }: SyncMenuProps) {
+export function SyncMenu({ data, onReplace }: SyncMenuProps) {
   const {
     isLoggedIn,
     syncing,
@@ -48,10 +49,26 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
     pushToSheets,
   } = useSheets()
 
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmSignOut, setConfirmSignOut] = useState(false)
+  const [syncOpen, setSyncOpen] = useState(false)
+
+  // ─── SYNC ACTIONS ───────────────────────────────────
+  const handleTwoWay = async () => {
+    await pushToSheets(data)
+    const fresh = await pullFromSheets()
+    if (fresh) onReplace(fresh)
+  }
+
+  const handlePushOnly = async () => {
+    await pushToSheets(data)
+  }
+
+  const handlePullOnly = async () => {
+    const fresh = await pullFromSheets()
+    if (fresh) onReplace(fresh)
+  }
 
   // ─── RECONNECT STATE ─────────────────────────────────
-  // If token expired, show a warning button instead of the menu
   if (needsReconnect) {
     return (
       <Button
@@ -85,7 +102,7 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
     )
   }
 
-  // ─── LOGGED IN, WORKING ──────────────────────────────
+  // ─── LOGGED IN ───────────────────────────────────────
   return (
     <>
       <DropdownMenu>
@@ -104,7 +121,7 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
           </Button>
         </DropdownMenuTrigger>
 
-        <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuContent align="end" className="w-60">
           <DropdownMenuLabel className="flex flex-col gap-0.5">
             <span className="text-xs font-medium">Google Sheets</span>
             <span className="text-[10px] font-normal text-muted-foreground">
@@ -120,28 +137,39 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
 
           <DropdownMenuItem
             disabled={syncing}
-            onClick={async () => {
-              const fresh = await pullFromSheets()
-              if (fresh) onPull(fresh)
+            onSelect={(e) => {
+              e.preventDefault()
+              setSyncOpen(true)
             }}
           >
-            <Download className="mr-2 h-4 w-4" />
-            Pull from Sheets
+            <ArrowLeftRight className="mr-2 h-4 w-4" />
+            Sync now…
           </DropdownMenuItem>
 
-          <DropdownMenuItem
-            disabled={syncing}
-            onClick={() => pushToSheets(data)}
-          >
-            <Upload className="mr-2 h-4 w-4" />
-            Push to Sheets
-          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+
+          <BackupDialog
+            data={data}
+            onReplace={onReplace}
+            trigger={
+              <DropdownMenuItem
+                onSelect={(e) => e.preventDefault()}
+                className="cursor-pointer"
+              >
+                <HardDrive className="mr-2 h-4 w-4" />
+                Backup & Restore…
+              </DropdownMenuItem>
+            }
+          />
 
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
             className="text-red-600 focus:text-red-600"
-            onClick={() => setConfirmOpen(true)}
+            onSelect={(e) => {
+              e.preventDefault()
+              setConfirmSignOut(true)
+            }}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Sign out
@@ -149,7 +177,19 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      {/* ─── SYNC DIALOG ────────────────────────── */}
+      <SyncDialog
+        open={syncOpen}
+        onOpenChange={setSyncOpen}
+        data={data}
+        syncing={syncing}
+        onTwoWay={handleTwoWay}
+        onPushOnly={handlePushOnly}
+        onPullOnly={handlePullOnly}
+      />
+
+      {/* ─── SIGN OUT CONFIRM ───────────────────── */}
+      <AlertDialog open={confirmSignOut} onOpenChange={setConfirmSignOut}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Sign out of Google Sheets?</AlertDialogTitle>
@@ -163,7 +203,7 @@ export function SyncMenu({ data, onPull }: SyncMenuProps) {
             <AlertDialogAction
               onClick={() => {
                 logout()
-                setConfirmOpen(false)
+                setConfirmSignOut(false)
               }}
               className="bg-red-600 hover:bg-red-700"
             >
